@@ -4,5 +4,5 @@ pdm中无Owner属性则以文件(outhtml)或邮件的方式输出. 通过配置�
 
 支持的模式有: 
 
-  pdm文件与oracle数据库.
-  oracle数据库与oracle数据库.
+* pdm文件与oracle数据库.
+* oracle数据库与oracle数据库.
