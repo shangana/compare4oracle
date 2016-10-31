@@ -1,2 +1,2 @@
-# compare4oracle
+# compare4oracle 此版本为oracle版本
 pdm文件与oracle数据库进行比对
