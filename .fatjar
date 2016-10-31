@@ -1,0 +1,14 @@
+#Fat Jar Configuration File
+#Wed Oct 19 20:19:09 CST 2016
+onejar.license.required=false
+manifest.classpath=
+manifest.removesigners=true
+onejar.checkbox=true
+jarname=compare4oracle_fat.jar
+manifest.mergeall=true
+manifest.mainclass=compare.AppMain
+manifest.file=<createnew>
+jarname.isextern=false
+onejar.expand=
+excludes=
+includes=
