@@ -184,7 +184,7 @@ public class CompareIndex extends SubmeterCompareThread {
         for (int idx = 0; idx < columnNames.size(); idx++) {
             String columnName = columnNames.get(idx);
             String compareName = compareNames.get(idx);
-            if (!columnName.equalsIgnoreCase(compareName)) {
+            if (null == columnName || !columnName.equalsIgnoreCase(compareName)) {
                 DifferenceIndex i = new DifferenceIndex();
                 error.add(i);
                 i.setPdmfile(pdmfile);

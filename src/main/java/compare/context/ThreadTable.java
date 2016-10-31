@@ -29,7 +29,7 @@ public class ThreadTable extends Thread {
     
     @Override
     public void run() {
-        logger.debug(owner+" 用户表执行开始...");
+        logger.debug(owner+" This user's table execution starts...");
         String[] split = owner.split("=");
         TreeMap<String, Table> source;
         TreeMap<String, Table> compare;
@@ -58,7 +58,7 @@ public class ThreadTable extends Thread {
         try {
             tablelatch.await();
             latch.countDown();
-            logger.debug(owner+" 用户表执行完成.");
+            logger.debug(owner+" This user's table is executed.");
         }
         catch (InterruptedException e) {
             e.printStackTrace();

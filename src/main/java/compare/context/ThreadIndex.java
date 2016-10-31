@@ -29,7 +29,7 @@ public class ThreadIndex extends Thread {
     
     @Override
     public void run() {
-        logger.debug(owner+" 用户索引执行开始...");
+        logger.debug(owner+" The user's index execution starts...");
         String[] split = owner.split("=");
         TreeMap<String, Index> source;
         TreeMap<String, Index> compare;
@@ -58,7 +58,7 @@ public class ThreadIndex extends Thread {
         try {
             indexlatch.await();
             latch.countDown();
-            logger.debug(owner+" 用户索引执行完成.");
+            logger.debug(owner+" The user's index is executed.");
         }
         catch (InterruptedException e) {
             e.printStackTrace();
