@@ -345,9 +345,7 @@ logger.debug("--index code="+code);
             out = new FileOutputStream(xmlfile, true);
             br = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
             while ((line = br.readLine()) != null) {
-//                StringBuffer sb = new StringBuffer();
                 line = line.replaceAll("[\\x00-\\x08\\x0b-\\x0c\\x0e-\\x1f]", "");
-//                sb.append(line);
                 out.write(line.getBytes("utf-8"));
                 out.write("\r\n".getBytes());// 写入一个换行  
             }
