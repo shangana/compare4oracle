@@ -55,6 +55,9 @@ public class XMLTable {
                 index.setUniqueness(xmlindex.getUnique());
                 List<String> columnRefIds = xmlindex.getIndexColumnRefIds();
                 List<String> columnName = Lists.newArrayList();
+                if(null == columnRefIds) {
+                    continue;
+                }
                 for (String refId : columnRefIds) {
                     columnName.add(refIdMap.get(refId));
                 }
@@ -71,11 +74,15 @@ public class XMLTable {
                 index.setTableName(code);
                 if (null != primaryKey && null != keys.get(primaryKey)) {
                     index.setPrimaryKey("PRIMARY KEY");
-                } else {
+                }
+                else {
                     index.setUniqueness("UNIQUE");
                 }
                 List<String> columnRefIds = xmlKey.getColumnRefIds();
                 List<String> columnName = Lists.newArrayList();
+                if (null == columnRefIds) {
+                    continue;
+                }
                 for (String refId : columnRefIds) {
                     columnName.add(refIdMap.get(refId));
                 }

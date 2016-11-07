@@ -67,8 +67,9 @@ public class LocalFileManger {
      * @todo 删除文件目录
      * @param path
      *            String
+     * @throws Exception 
      */
-    public static void delDirWithFiles(String path)
+    public static void delDirWithFiles(String path) throws Exception
     { 
         try
         {
@@ -84,16 +85,21 @@ public class LocalFileManger {
                     } else
                     {
                         logger.info("del file:" + tmp[i]);
-                        tmp[i].delete();
+                        if (!tmp[i].delete()){
+                           throw  new Exception("delete file fail!--"+tmp[i].getName());
+                        }
 
                     }
                 }
                 logger.info("del dir:" + dir.getAbsolutePath());
-                dir.delete();
+                if (!dir.delete()){
+                    throw  new Exception("delete file fail!--"+dir.getAbsolutePath());
+                }
             }
         } catch (Exception ex)
         {
             ex.printStackTrace();
+            throw ex;
         }
     }
     
@@ -112,11 +118,11 @@ public class LocalFileManger {
         File oldFile = new File(OldFile);
         if (!oldFile.exists())
         {
-            throw new Exception(NewFile + ":is not exist");
+            throw new Exception(oldFile + ":is not exist");
         }
         if (!oldFile.isFile())
         {
-            throw new Exception(NewFile + ":is not a file");
+            throw new Exception(oldFile + ":is not a file");
         }
         // 检查目标目录是否存在
         File fNewFile = new File(NewFile);  

@@ -8,6 +8,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.google.common.collect.Maps;
+
 import compare.beans.PdmFileInfo;
 import compare.beans.Table;
 
@@ -50,7 +51,6 @@ public class ThreadTable extends Thread {
         diff.setSource(source);
         diff.setOwner(owner.split("=")[1]);
         diff.setParam(param);
-        diff.setOwnerParam(ownerParam);
         diff.isSubmeter(submeter);
         diff.start();
         try {
@@ -66,6 +66,7 @@ public class ThreadTable extends Thread {
     private void doTableData() {
         final String[] split = owner.split("=");
         final DatabaseCompare db = DatabaseCompare.getInstance();
+        final CountDownLatch cdl = new CountDownLatch(2);
         Thread t1 = new Thread() {
             @Override
             public void run() {
@@ -91,6 +92,7 @@ public class ThreadTable extends Thread {
                     else
                         logger.error(new Exception("source connection get error."));
                 }
+                cdl.countDown();
             }
         };
         t1.start();
@@ -102,13 +104,13 @@ public class ThreadTable extends Thread {
                     compare = db.getTables(databaseConnection);
                 else
                     logger.error(new Exception("compare connection get error."));
+                cdl.countDown();
             };
         };
         t2.start();
         
         try {
-            t1.join();
-            t2.join();
+            cdl.await();
         }
         catch (InterruptedException e1) {
             e1.printStackTrace();

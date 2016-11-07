@@ -164,7 +164,7 @@ public class XMLConfig {
             Element item = iterator.next();
             if ("username".equalsIgnoreCase(item.getName())) {
                 if (null != item.getTextTrim() && !"".equals(item.getTextTrim())) {
-                    usernames.add(item.getTextTrim());
+                    usernames.add(item.getTextTrim().toUpperCase());
                 }
             }
         }

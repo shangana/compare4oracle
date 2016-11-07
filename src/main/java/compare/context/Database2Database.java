@@ -1,5 +1,6 @@
 package compare.context;
 
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -13,6 +14,7 @@ import com.google.common.collect.Maps;
 import compare.beans.definition.Database;
 import compare.beans.definition.Equality;
 import compare.beans.definition.XMLConfig;
+import compare.core.CompareResult;
 import compare.core.MailHandler;
 
 
@@ -22,13 +24,11 @@ public class Database2Database extends Compare {
     private List<Database> databases;
     private Database single;
     private Equality equality;
-    ThreadParam param = new ThreadParam();
     
     public Database2Database(String config) {
         super(config);
         handler = new MailHandler(xmlConfig.getMail());
         sources = xmlConfig.getSources();
-        equality = xmlConfig.getEquality();
         //
         if (null != single) {
           logger.debug("--single compare config--");
@@ -86,10 +86,13 @@ public class Database2Database extends Compare {
         }
         return xml;
     }
+    
     private void getEquality() throws Exception {
+        equality = xmlConfig.getEquality();
         List<String> usernames = equality.getUsernames();
         Map<String,Database> sourcemap = Maps.newHashMap();
         Map<String,Database> dbmap = Maps.newHashMap();
+        List<String> sourceUsers = Lists.newArrayList();
         if (null == usernames) {
             usernames = Lists.newArrayList();
             if (null != single) {
@@ -99,10 +102,11 @@ public class Database2Database extends Compare {
                         usernames.add("<=>");
                         dbmap.put(single.getDbusr().toUpperCase(), single);
                         sourcemap.put(user.toUpperCase(), source);
+                        sourceUsers.add(user.toUpperCase());
                         break;
                     }
                 }
-            }//此步有逻辑有问题
+            }
             else {
                 for (Database source : sources) {
                     String user = source.getDbusr();
@@ -112,6 +116,7 @@ public class Database2Database extends Compare {
                             usernames.add(dbusr + "=" + dbusr);
                             dbmap.put(dbusr.toUpperCase(), database);
                             sourcemap.put(user.toUpperCase(), source);
+                            sourceUsers.add(user.toUpperCase());
                             break;
                         }
                     }
@@ -120,7 +125,27 @@ public class Database2Database extends Compare {
             equality.setUsernames(usernames);
             equality.setDbmap(dbmap);
         }
-       
+        else {
+            for (Database database : databases) {
+                dbmap.put(database.getDbusr().toUpperCase(), database);
+            }
+            equality.setDbmap(dbmap);
+            
+            for (Database database : sources) {
+                sourcemap.put(database.getDbusr().toUpperCase(), database);
+            }
+            equality.setSourcemap(sourcemap);
+            //
+            Iterator<String> iterator = usernames.iterator();
+            while(iterator.hasNext()) {
+                String[] next = iterator.next().split("=");
+                if (!sourceUsers.contains(next[0].toUpperCase())) {
+                    iterator.remove();
+                    logger.error(new Exception("pdm file, not exists <equality> tag configure to user is "+next[0].toUpperCase()));
+                }
+            }
+            
+        }
     }
     
     public void compare() throws Exception {
@@ -129,6 +154,7 @@ public class Database2Database extends Compare {
         //
         List<DifferenceTable> tableerrors = Lists.newArrayList();
         List<DifferenceIndex> indexerrors = Lists.newArrayList();
+        ThreadParam param = new ThreadParam();
         Integer countSourceTables = 0 ;
         Integer countCompareTables = 0 ;
         param.setIndexerrors(indexerrors);
@@ -141,16 +167,24 @@ public class Database2Database extends Compare {
         for (String owner : usernames) {
             String[] split = owner.split("=");
             if (("".equals(split[0])||"".equals(split[1])) && !split[0].equals(split[1])) {
-                logger.error("比对双方的对应用户配置错误!");
+                logger.error(new Exception("比对双方的对应用户配置错误!"));
                 return;
             }
+            
+            Database database = equality.getDbmap().get(split[1].toUpperCase());
+            if (null == database)  {
+                logger.error(new Exception("<equality> config error, 比对双方的对应用户与数据连接不一致."));
+                latch.countDown();
+                continue;
+            }
+            
             OwnerParam ownerParam = new OwnerParam();
           //线程执行
             ThreadOwner threadOwner= new ThreadOwner();
             threadOwner.setLatch(latch);
             threadOwner.setOwner(owner);
-            ownerParam.setDatabase(equality.getDbmap().get(split[1].toUpperCase()));
             ownerParam.setSource(equality.getSourcemap().get(split[0].toUpperCase()));
+            ownerParam.setDatabase(equality.getDbmap().get(split[1].toUpperCase()));
             threadOwner.setParam(param);
             threadOwner.setSingle(null != single);
             threadOwner.start();
@@ -162,10 +196,10 @@ public class Database2Database extends Compare {
         catch (InterruptedException e) {
             e.printStackTrace();
         }
-//        //
-//        sendTableMail(tableerrors);
-//        //
-//        sendIndexMail(indexerrors);
+        //
+        sendTableMail(tableerrors, param);
+        //
+        sendIndexMail(indexerrors);
         
     }
     
@@ -174,8 +208,33 @@ public class Database2Database extends Compare {
         if (null == sources || null == databases) {
             throw new Exception("--This is xml config file is error.");
         }
+        //
+        if (equality.getUsernames().isEmpty()) {
+            throw new Exception("未有配置正确比对用户!");
+        }
     }
 
+    private void sendIndexMail(List<DifferenceIndex> indexerrors) throws IOException {
+        CompareResult result = new CompareResult();
+        result.setCompareContent("database");
+        result.setSourceContent("database");
+        result.setIndexErrors(indexerrors);
+        handler.sendIndexMail(indexerrors, result);
+    }
+
+    private void sendTableMail(List<DifferenceTable> errors, ThreadParam param) throws IOException {
+        //
+        int sourceNumber = param.getCountSourceTables();
+        int compareNumber = param.getCountCompareTables();
+        
+        CompareResult result = new CompareResult();
+        result.setCompareContent("database");
+        result.setCompareNumber(compareNumber);
+        result.setSourceContent("database");
+        result.setSourceNumber(sourceNumber);
+        result.setTableErrors(errors);
+        handler.sendTableMail(errors, result);
+    }
 //    private void compareTable() throws IOException {
 //
 //        logger.debug("compare table count Thread number is "+databases.size());

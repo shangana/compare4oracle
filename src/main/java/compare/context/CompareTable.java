@@ -19,12 +19,10 @@ public class CompareTable extends SubmeterCompareThread{
     private CountDownLatch latch;
     private TreeMap<String, Table> source;
     private TreeMap<String, Table> compare;
-//    private List<DifferenceTable> errors;
     private boolean submeter = false;
     private String owner;
     private String pdmfile;
     private ThreadParam param;
-    private OwnerParam ownerParam;
     
     public CompareTable(CountDownLatch latch) {
         this.latch = latch;
@@ -78,7 +76,7 @@ public class CompareTable extends SubmeterCompareThread{
         }
         
         param.getTableerrors().addAll(error);
-        param.setCountCompareTables(compare.keySet().size());
+        param.setCountCompareTables(error.size());
         param.setCountSourceTables(source.keySet().size());
         //
         latch.countDown();
@@ -247,11 +245,11 @@ public class CompareTable extends SubmeterCompareThread{
             t.setSourseTable(tableName);
             t.setSourseField(column.getColumnName());
             t.setSourseType(column.getColumnType());
-            t.setSourseDefault(dataDefault);
+            t.setSourseDefault("("+dataDefault+")");
             t.setCompareTable(compareTableName);
             t.setCompareField(compareTabColumn.getColumnName());
             t.setCompareType(compareTabColumn.getColumnType());
-            t.setCompareDefault(compareTabColumn.getDataDefault());
+            t.setCompareDefault("("+compareDataDefault+")");
         }
     }
     private void compareOrder(String parentTableName,String tableName, String compareTableName, TabColumn column, TabColumn compareTabColumn,
@@ -293,8 +291,5 @@ public class CompareTable extends SubmeterCompareThread{
     }
     public void setParam(ThreadParam param) {
         this.param = param;
-    }
-    public void setOwnerParam(OwnerParam ownerParam) {
-        this.ownerParam = ownerParam;
     }
 }

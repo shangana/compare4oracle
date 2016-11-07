@@ -21,12 +21,12 @@
 		-->
 		<!-- 本地pdm文件配置,与svn配置选择一种即可-->
 		<local>
-			<path>/Users/apple/Downloads/0001_Root.pdm</path>
-			<!-- 
-			<path>/Users/apple/Desktop/pdm/SEC用户表.pdm</path>
-			<path>/Users/apple/Desktop/pdm/base用户表.pdm</path>
-			<path>/Users/apple/Desktop/pdm/so1用户表.pdm</path>
-			-->
+			<path>/Users/apple/Desktop/pdm1/ailk_verisbilling_data_model_cim.pdm</path>
+			<path>/Users/apple/Desktop/pdm1/ailk_bd_pdm.pdm</path>
+			<path>/Users/apple/Desktop/pdm1/ailk_sd_pdm.pdm</path>
+			<path>/Users/apple/Desktop/pdm1/ailk_md_pdm.pdm</path>
+			<path>/Users/apple/Desktop/pdm1/ailk_openbilling_data_model_productmanager.pdm</path>
+			<path>/Users/apple/Desktop/pdm1/ailk_verisbilling_data_model_usage.pdm</path>
 		</local>
 		
 	</pdm>

@@ -22,7 +22,6 @@ public class CompareIndex extends SubmeterCompareThread {
     private boolean submeter;
     private String pdmfile;
     private ThreadParam param;
-    private OwnerParam ownerParam;
     
     public CompareIndex(CountDownLatch latch) {
         this.latch=latch;
@@ -184,8 +183,9 @@ public class CompareIndex extends SubmeterCompareThread {
         List<String> compareNames = compareIndex.getColumnName();
         for (int idx = 0; idx < columnNames.size(); idx++) {
             String columnName = columnNames.get(idx);
-            String compareName = compareNames.get(idx);
-            if (null == columnName || !columnName.equalsIgnoreCase(compareName)) {
+             
+            if (null == columnName || columnNames.size() != compareNames.size()
+                    || !columnName.equalsIgnoreCase(compareNames.get(idx))) {
                 DifferenceIndex i = new DifferenceIndex();
                 error.add(i);
                 i.setPdmfile(pdmfile);
@@ -229,8 +229,5 @@ public class CompareIndex extends SubmeterCompareThread {
     }
     public void setParam(ThreadParam param) {
         this.param = param;
-    }
-    public void setOwnerParam(OwnerParam ownerParam) {
-        this.ownerParam = ownerParam;
     }
 }

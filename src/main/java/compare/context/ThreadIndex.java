@@ -48,8 +48,6 @@ public class ThreadIndex extends Thread {
         diff.setSource(source);
         diff.setOwner(owner.split("=")[1]);
         diff.setParam(param);
-        diff.setOwnerParam(ownerParam);
-//        diff.setErrors(errors);
         diff.isSubmeter(submeter);
         diff.start();
         try {

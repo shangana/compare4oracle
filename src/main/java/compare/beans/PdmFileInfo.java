@@ -15,10 +15,12 @@ public class PdmFileInfo {
     
     public void addTables(List<String> users, TreeMap<String, Table> t) {
         for (String string : users) {
-            TreeMap<String, Table> map = tables.get(string);
+            if (null == string || "".equals(string)) 
+                continue;
+            TreeMap<String, Table> map = tables.get(string.toUpperCase());
             if (null == map) {
                 map = Maps.newTreeMap();
-                tables.put(string, map);
+                tables.put(string.toUpperCase(), map);
             }
             map.putAll(t);
         }
@@ -26,10 +28,12 @@ public class PdmFileInfo {
     
     public void addIndexs(List<String> users, TreeMap<String, Index> i) {
         for (String string : users) {
-            TreeMap<String, Index> map = indexs.get(string);
+            if (null == string || "".equals(string)) 
+                continue;
+            TreeMap<String, Index> map = indexs.get(string.toUpperCase());
             if (null == map) {
                 map = Maps.newTreeMap();
-                indexs.put(string, map);
+                indexs.put(string.toUpperCase(), map);
             }
             map.putAll(i);
         }
@@ -55,11 +59,12 @@ public class PdmFileInfo {
 
     public void setUsers(List<String> users) {
         for (String string : users) {
-            if (!this.users.contains(string)) {
-                this.users.add(string);
+            if (null == string || "".equals(string))
+                continue;
+            if (!this.users.contains(string.toUpperCase().trim())) {
+                this.users.add(string.toUpperCase().trim());
             }
         }
-        this.users = users;
     }
     
 }
