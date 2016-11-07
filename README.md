@@ -29,4 +29,13 @@ pdm中无Owner属性则以文件(outhtml)或邮件的方式输出. 通过配置�
 >
  1.解决pdm无法使用XML解析
   答:这种问题是由于pdm是bin二进制格式,需要人工另存为xml格式的pdm.
- 2.
+  
+ 2.不使用源码,如何直接使用此功能
+ 答: 下载以下文件,并放在同一目录下, 执行命令 java -jar compare4oracle_fat.jar pdm2oracledb.xml 1
+ ```
+  compare4oracle_fat.jar
+  compare_index.html
+  compare_table.html
+  ErrorInformation.html
+  pdm2oracledb.xml
+```
