@@ -15,8 +15,6 @@ import org.apache.logging.log4j.Logger;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-
-import compare.beans.DatabaseInfo;
 import compare.beans.IndColumns;
 import compare.beans.Index;
 import compare.beans.TabColumn;
@@ -34,29 +32,35 @@ public class DatabaseCompare {
         return new DatabaseCompare();
     }
     
-    public DatabaseInfo getDatabaseInfos(List<Database> databases) {
-        DatabaseInfo info = new DatabaseInfo();
-        for (Database database : databases) {
-            DatabaseInfo d = getDatabaseInfo(database);
-            info.getTables().putAll(d.getTables());
-            info.getIndexs().putAll(d.getIndexs());
-        }
-        
-        return info;
-    }
+//    public DatabaseInfo getDatabaseInfos(List<Database> databases) {
+//        DatabaseInfo info = new DatabaseInfo();
+//        for (Database database : databases) {
+//            DatabaseInfo d = getDatabaseInfo(database);
+//            info.getTables().putAll(d.getTables());
+//            info.getIndexs().putAll(d.getIndexs());
+//        }
+//        
+//        return info;
+//    }
+//    @Deprecated
+//    public DatabaseInfo getDatabaseInfo(Database config) {
+//        Connection connection = getConnection(config);
+//        DatabaseInfo info = new DatabaseInfo();
+//        info.getTables().put(config.getDbusr().toUpperCase(), getTables(connection));
+//        info.getIndexs().put(config.getDbusr().toUpperCase(), getIndexs(connection));
+//        logger.debug("get database info finished.");
+//        return info;
+//        
+//    }
     
-    public DatabaseInfo getDatabaseInfo(Database config) {
-        logger.debug("connection oracle user="+config.getDbusr()+" url="+config.getDburl());
+    public Connection getConnection(Database config) {
+        if (null == config) return null;
+        logger.debug("connection oracle user=" + config.getDbusr() + " url=" + config.getDburl());
         String driver = "oracle.jdbc.driver.OracleDriver";
         Connection connection = null;
         try {
             Class.forName(driver).newInstance();
             connection = DriverManager.getConnection(config.getDburl(), config.getDbusr(), config.getDbpwd());
-            DatabaseInfo info = new DatabaseInfo();
-            info.getTables().put(config.getDbusr().toUpperCase(), getTables(connection));
-            info.getIndexs().put(config.getDbusr().toUpperCase(), getIndexs(connection));
-            logger.debug("get database info finished.");
-            return info;
         }
         catch (SQLException e) {
             logger.error(e);
@@ -74,20 +78,8 @@ public class DatabaseCompare {
             logger.error(e);
             e.printStackTrace();
         }
-        finally {
-            if (null != connection) 
-            {
-                try {
-                    connection.close();
-                }
-                catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-        return null;
+        return connection;
     }
-    
     private List<String> getPrimaryKeys(Connection connection) {
         logger.debug("get primaryKeys.");
         String sql="select CONSTRAINT_NAME,TABLE_NAME from user_constraints where CONSTRAINT_TYPE='P'";
@@ -131,7 +123,7 @@ public class DatabaseCompare {
         }
         return null;
     }
-    private TreeMap<String, Index> getIndexs(Connection connection) {
+    public TreeMap<String, Index> getIndexs(Connection connection) {
         logger.debug("get indexs.");
         String sql = "SELECT TABLE_NAME,INDEX_NAME,UNIQUENESS FROM USER_INDEXES";
         List<String> primaryKeys = getPrimaryKeys(connection);
@@ -245,30 +237,28 @@ public class DatabaseCompare {
         return null;
     }
     
-    private TreeMap<String ,Table> getTables(Connection connection) {
+    public TreeMap<String ,Table> getTables(Connection connection) {
         logger.debug("get tables.");
         String sql = "SELECT TABLE_NAME FROM USER_TABLES";
         ResultSet rs = null;
+        Statement statement = null;
         try {
-            Statement statement = connection.createStatement();
+            statement = connection.createStatement();
             rs = statement.executeQuery(sql);
-            List<String> tableNames = Lists.newArrayList();
+            TreeMap<String, Table> tables = Maps.newTreeMap();
+            Map<String, LinkedHashMap<String, TabColumn>> tabColumns = getTabColumns(connection);
             while (rs.next()) {
                 String tableName = rs.getString("TABLE_NAME");
                 if (tableName.indexOf("$") != -1) {
                     continue;
                 }
-                tableNames.add(tableName);
-            }
-            TreeMap<String, Table> tables = Maps.newTreeMap();
-            Map<String, LinkedHashMap<String, TabColumn>> tabColumns = getTabColumns(connection);
-            for (String tableName : tableNames) {
                 Table table = new Table();
                 table.setTableName(tableName);
-                table.setColumns(tabColumns.get(tableName));
+                if (null!= tabColumns)
+                    table.setColumns(tabColumns.get(tableName));
                 tables.put(tableName, table);
-                
             }
+            
             logger.debug("get tables finished.");
             return tables;
         }
@@ -279,6 +269,14 @@ public class DatabaseCompare {
             if (rs != null) {
                 try {
                     rs.close();
+                }
+                catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (null != statement) {
+                try {
+                    statement.close();
                 }
                 catch (SQLException e) {
                     e.printStackTrace();
@@ -295,7 +293,7 @@ public class DatabaseCompare {
      */
     private Map<String, LinkedHashMap<String, TabColumn>> getTabColumns(Connection connection) {
         logger.debug("get table coulumns.");
-        String sql = "SELECT TABLE_NAME,COLUMN_NAME,NULLABLE,DATA_DEFAULT,DATA_TYPE,DATA_LENGTH,DATA_SCALE,DATA_PRECISION,COLUMN_ID,CHARACTER_SET_NAME,CHAR_LENGTH,CHAR_USED FROM USER_TAB_COLUMNS";
+        String sql = "SELECT TABLE_NAME,COLUMN_NAME,NULLABLE,DATA_DEFAULT,DATA_TYPE,DATA_LENGTH,DATA_SCALE,DATA_PRECISION,COLUMN_ID,CHARACTER_SET_NAME FROM USER_TAB_COLUMNS";
         Statement statement;
         ResultSet rs = null;
         
@@ -318,23 +316,14 @@ public class DatabaseCompare {
                 String precision = rs.getString("DATA_PRECISION");
                 column.setColumnId(rs.getString("COLUMN_ID"));
                 column.setCharacterSetName(rs.getString("CHARACTER_SET_NAME"));
-                String charUsed = rs.getString("CHAR_USED");
-                String charLength = rs.getString("CHAR_LENGTH");
                 String columnType = dataType;
                 if ("CHAR".equals(dataType) || "VARCHAR".equals(dataType) || "VARCHAR2".equals(dataType)) {
-                    if ("C".equals(charUsed)) {
-                        columnType += "("+charLength+" char)";
-                    }else {
-                        columnType += "(" + length + ")";
-                    }
+                    columnType += "(" + length + ")";
                 }
                 else if (null != scale && Integer.parseInt(scale) > 0) {
                     columnType += "(" + precision + "," + scale + ")";
                 }
                 else if (null != scale && Integer.parseInt(scale) == 0) {
-                    columnType += "(" + precision + ")";
-                }
-                else if (null != precision) {
                     columnType += "(" + precision + ")";
                 }
                 column.setColumnType(columnType);

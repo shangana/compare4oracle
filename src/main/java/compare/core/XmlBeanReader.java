@@ -337,16 +337,17 @@ logger.debug("--index code="+code);
         if (xmlfile.exists()) {
             xmlfile.delete();
         }
+        String charsetName = MailHandler.getCharsetName(file);
         FileOutputStream out = null;
         BufferedReader br = null;
         try {
             
-            xmlfile.createNewFile();
+//            xmlfile.createNewFile();
             out = new FileOutputStream(xmlfile, true);
-            br = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
+            br = new BufferedReader(new InputStreamReader(new FileInputStream(file), charsetName));
             while ((line = br.readLine()) != null) {
                 line = line.replaceAll("[\\x00-\\x08\\x0b-\\x0c\\x0e-\\x1f]", "");
-                out.write(line.getBytes("utf-8"));
+                out.write(line.getBytes(charsetName));
                 out.write("\r\n".getBytes());// 写入一个换行  
             }
             return xmlfile;

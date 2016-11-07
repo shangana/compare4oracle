@@ -19,16 +19,17 @@ public class CompareIndex extends SubmeterCompareThread {
     private TreeMap<String, Index> compare;
     private TreeMap<String, Index> source;
     private String owner;
-    private List<DifferenceIndex> errors;
     private boolean submeter;
     private String pdmfile;
+    private ThreadParam param;
+    private OwnerParam ownerParam;
     
     public CompareIndex(CountDownLatch latch) {
         this.latch=latch;
     }
     @Override
     public void run() {
-        if (null == owner) {
+        if (null == owner || (null == compare && null == source)) {
             latch.countDown();
             return;
         }
@@ -77,7 +78,7 @@ public class CompareIndex extends SubmeterCompareThread {
             compare(source,compare,error,false);
             compare(compare,source,error,true);
         }
-        errors.addAll(error);
+        param.getIndexerrors().addAll(error);
         latch.countDown();
     }
     
@@ -223,10 +224,13 @@ public class CompareIndex extends SubmeterCompareThread {
     public void setOwner(String owner) {
         this.owner=owner;
     }
-    public void setErrors(List<DifferenceIndex> errors) {
-        this.errors=errors;
-    }
     public void isSubmeter(boolean submeter) {
         this.submeter=submeter;
+    }
+    public void setParam(ThreadParam param) {
+        this.param = param;
+    }
+    public void setOwnerParam(OwnerParam ownerParam) {
+        this.ownerParam = ownerParam;
     }
 }

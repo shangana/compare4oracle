@@ -1,11 +1,19 @@
 package compare.core;
 
+import info.monitorenter.cpdetector.io.ASCIIDetector;
+import info.monitorenter.cpdetector.io.CodepageDetectorProxy;
+import info.monitorenter.cpdetector.io.JChardetFacade;
+import info.monitorenter.cpdetector.io.ParsingDetector;
+import info.monitorenter.cpdetector.io.UnicodeDetector;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Comparator;
@@ -24,6 +32,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.google.common.collect.Maps;
+
 import compare.beans.definition.Mail;
 import compare.context.DifferenceIndex;
 import compare.context.DifferenceTable;
@@ -45,6 +54,7 @@ public class MailHandler {
     
     public void sendNoOwnerMail(List<NoOwner> nws) throws Exception {
         String filename = "ErrorInformation.html";
+        String charsetName = getCharsetName(filename);
         StringBuffer tr = new StringBuffer();
         for (NoOwner no : nws) {
             System.out.println("not owner:" + no.getTableName());
@@ -55,7 +65,7 @@ public class MailHandler {
         
         try {
             logger.info("write error File...");
-            String body = readBody(filename);
+            String body = readBody(filename, charsetName);
             body = body.replaceAll("#wupf1", getCurrDateTime());
             String rows = java.util.regex.Matcher.quoteReplacement(tr.toString());
             body = body.replaceAll("#wupf4", rows);
@@ -63,7 +73,7 @@ public class MailHandler {
             // ouput html
             String file = outputhtml + File.separator + "no_owner.html";
             logger.debug("save file path = " + new File(file).getAbsolutePath());
-            saveFile(file, body);
+            saveFile(file, body, charsetName);
             
             if (null != mail) {
                 String subject = "读取PDM文件无Owner邮件(自动发出)";
@@ -80,6 +90,7 @@ public class MailHandler {
     public void sendTableMail(List<DifferenceTable> errors, CompareResult result) throws IOException {
         sortTable(errors);
         String filename = "compare_table.html";
+        String charsetName = getCharsetName(filename);
         StringBuffer tr = new StringBuffer();
         LinkedHashMap<String, Integer> totalMap = Maps.newLinkedHashMap();
         for (DifferenceTable t : errors) {
@@ -112,7 +123,7 @@ public class MailHandler {
             tr.append("</tr>");
         }
         logger.debug("write Result File...");
-        String readBody = readBody(filename);
+        String readBody = readBody(filename,charsetName);
         readBody = readBody.replaceAll("#sourceTables", result.getSourceNumber() + "");
         readBody = readBody.replaceAll("#compareTables", result.getCompareNumber() + "");
         readBody = readBody.replaceAll("#diffTables", result.getDiffNumber() + "");
@@ -134,7 +145,7 @@ public class MailHandler {
         //初始化
         String file = outputhtml + File.separator + "table.html";
         logger.debug("save file path = " + new File(file).getAbsolutePath());
-        saveFile(file, readBody);
+        saveFile(file, readBody, charsetName);
         
         if (null != mail) {
             logger.debug("send mail to compare table result.");
@@ -156,6 +167,7 @@ public class MailHandler {
     public void sendIndexMail(List<DifferenceIndex> errors, CompareResult result) throws IOException {
         sortIndex(errors);
         String filename = "compare_index.html";
+        String charsetName = getCharsetName(filename);
         StringBuffer tr = new StringBuffer();
         LinkedHashMap<String, Integer> totalMap = Maps.newLinkedHashMap();
         for (DifferenceIndex i : errors) {
@@ -185,7 +197,7 @@ public class MailHandler {
             tr.append("</tr>");
         }
         logger.debug("write Result File...");
-        String readBody = readBody(filename);
+        String readBody = readBody(filename, charsetName);
         readBody = readBody.replaceAll("#wupf1", getCurrDateTime());
         readBody = readBody.replaceAll("#wupf2", result.getSourceContent());
         readBody = readBody.replaceAll("#wupf3", result.getCompareContent());
@@ -202,7 +214,7 @@ public class MailHandler {
         //初始化
         String file = outputhtml + File.separator + "index.html";
         logger.debug("save file path = " + new File(file).getAbsolutePath());
-        saveFile(file, readBody);
+        saveFile(file, readBody, charsetName);
         
         if (null != mail) {
             logger.debug("send mail to compare index result.");
@@ -221,13 +233,12 @@ public class MailHandler {
         
     }
 
-    private String readBody(String filename) throws IOException {
-        File f = new File(filename);
+    private String readBody(String filename,String charsetName) throws IOException {
         InputStreamReader read = null;
         BufferedReader reader = null;
         try {
             StringBuffer sb = new StringBuffer();
-            read = new InputStreamReader(new FileInputStream(f), "utf-8");
+            read = new InputStreamReader(new FileInputStream(filename), charsetName);
             reader = new BufferedReader(read);
             String line;
             while ((line = reader.readLine()) != null) {
@@ -344,19 +355,18 @@ public class MailHandler {
         return null;
     }
     
-    public static void saveFile(String strFileFullName, String str) {
-        FileOutputStream fout = null;
+    public static void saveFile(String strFileFullName, String str, String charsetName) {
+        OutputStreamWriter fout = null;
         try {
             
             logger.debug("saving filename:" + strFileFullName);
             File uploadFilePath = new File(strFileFullName);
             File parent = uploadFilePath.getParentFile();
-            logger.debug(parent.getAbsolutePath());
             if (!parent.exists()) {
                 parent.mkdir();
             }
-            fout = new FileOutputStream(strFileFullName);
-            fout.write(str.getBytes());
+            fout =new  OutputStreamWriter(new FileOutputStream(strFileFullName), charsetName);
+            fout.append(str);
             fout.flush();
             fout.close();
             logger.debug("saved file ok:" + strFileFullName);
@@ -377,6 +387,50 @@ public class MailHandler {
         }
     }
     
+    public static String getCharsetName(String file) {
+        return getCharsetName(new File(file));
+    }
+    public static String getCharsetName(File file) {
+        /*------------------------------------------------------------------------ 
+        detector是探测器，它把探测任务交给具体的探测实现类的实例完成。 
+        cpDetector内置了一些常用的探测实现类，这些探测实现类的实例可以通过add方法 
+        加进来，如ParsingDetector、 JChardetFacade、ASCIIDetector、UnicodeDetector。   
+        detector按照“谁最先返回非空的探测结果，就以该结果为准”的原则返回探测到的 
+        字符集编码。 
+      --------------------------------------------------------------------------*/
+      CodepageDetectorProxy detector = CodepageDetectorProxy.getInstance();
+      /*------------------------------------------------------------------------- 
+        ParsingDetector可用于检查HTML、XML等文件或字符流的编码,构造方法中的参数用于 
+        指示是否显示探测过程的详细信息，为false不显示。 
+      ---------------------------------------------------------------------------*/
+      detector.add(new ParsingDetector(false));//如果不希望判断xml的encoding，而是要判断该xml文件的编码，则可以注释掉
+      /*-------------------------------------------------------------------------- 
+         JChardetFacade封装了由Mozilla组织提供的JChardet，它可以完成大多数文件的编码 
+         测定。所以，一般有了这个探测器就可满足大多数项目的要求，如果你还不放心，可以 
+         再多加几个探测器，比如下面的ASCIIDetector、UnicodeDetector等。 
+        ---------------------------------------------------------------------------*/
+      detector.add(JChardetFacade.getInstance());
+      // ASCIIDetector用于ASCII编码测定
+      detector.add(ASCIIDetector.getInstance());
+      // UnicodeDetector用于Unicode家族编码的测定
+      detector.add(UnicodeDetector.getInstance());
+      Charset charset = null;
+      try {
+          charset = detector.detectCodepage(file.toURI().toURL());
+      }
+      catch (Exception ex) {
+          ex.printStackTrace();
+          logger.error(file.getName()+" This file charset name is error.");
+      }
+      if (charset != null) {
+          logger.debug(file+", This file charset is:"+charset);
+         return charset.name();
+      }
+      else {
+          logger.debug(file+", 文件编码格式取的默认值");
+         return "GBK";
+      }
+    }
     private static String getCurrDateTime() {
         java.sql.Timestamp date = new java.sql.Timestamp(System.currentTimeMillis());
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");

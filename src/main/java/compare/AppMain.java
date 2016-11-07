@@ -1,8 +1,5 @@
 package compare;
 
-import java.io.IOException;
-import java.util.concurrent.CountDownLatch;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -39,42 +36,9 @@ public class AppMain {
         }
     }
     
-    private static void database2Database(String[] args) {
+    private static void database2Database(String[] args) throws Exception {
         final Database2Database database = new Database2Database(args[0]);
-        final CountDownLatch lath = new CountDownLatch(2);
-        Thread t1 = new Thread() {
-            @Override
-            public void run() {
-                try {
-                    database.compareTable();
-                }
-                catch (IOException e) {
-                    e.printStackTrace();
-                }
-                lath.countDown();
-            }
-        };
-        t1.start();
-        Thread t2 = new Thread() {
-            @Override
-            public void run() {
-                try {
-                    database.compareIndex();
-                }
-                catch (IOException e) {
-                    e.printStackTrace();
-                }
-                lath.countDown();
-            }
-        };
-        t2.start();
-        
-        try {
-            lath.await();
-        }
-        catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        database.compare();
     }
     
     private static void pdm2Database(String[] args) throws Exception {

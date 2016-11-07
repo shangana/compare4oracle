@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<compare>
+	<!--
+	<mail>
+			<stmp>mail.asiainfo.com</stmp>
+			<user>yuesf</user>
+			<passwd>rgm@1234567</passwd>
+			<receiver>yuesf</receiver>
+	</mail>
+	-->
+	<sources>
+		<database>
+			<url>jdbc:oracle:thin:@10.20.16.80:1521:ngcrm</url>
+			<username>BJ_UCR_CEN1</username>
+			<passwd>123456</passwd>
+		</database>
+	</sources>
+	
+	
+	<databases>
+		<database>
+			<url>jdbc:oracle:thin:@10.211.55.4:1521:orcl</url>
+			<username>UCR_CEN1</username>
+			<passwd>123456</passwd>
+		</database>
+	</databases>
+	<!--比对双方用户的对等关系,可选, 格式"源用户=比对用户" 建议采用此方式配置比对用户-->
+	<equality>
+		<username>so1=ucr_cen1</username>
+		<username>base=base</username>
+		<username>sec=sec</username>
+	</equality>
+</compare>

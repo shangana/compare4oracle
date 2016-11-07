@@ -65,9 +65,6 @@
 		</dependency>
 
 
-
-
-
 	</dependencies>
 	<build>
 		<finalName>compare4oracle</finalName>

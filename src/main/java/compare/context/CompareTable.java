@@ -19,17 +19,19 @@ public class CompareTable extends SubmeterCompareThread{
     private CountDownLatch latch;
     private TreeMap<String, Table> source;
     private TreeMap<String, Table> compare;
-    private List<DifferenceTable> errors;
+//    private List<DifferenceTable> errors;
     private boolean submeter = false;
     private String owner;
     private String pdmfile;
+    private ThreadParam param;
+    private OwnerParam ownerParam;
     
     public CompareTable(CountDownLatch latch) {
         this.latch = latch;
     }
     @Override
     public void run() {
-        if (null == owner) {
+        if (null == owner || (null == compare && null == source)) {
             latch.countDown();
             return;
         }
@@ -75,7 +77,9 @@ public class CompareTable extends SubmeterCompareThread{
             compare(compare, source, error, true);
         }
         
-        errors.addAll(error);
+        param.getTableerrors().addAll(error);
+        param.setCountCompareTables(compare.keySet().size());
+        param.setCountSourceTables(source.keySet().size());
         //
         latch.countDown();
     }
@@ -278,9 +282,6 @@ public class CompareTable extends SubmeterCompareThread{
     public void setCompare(TreeMap<String, Table> compare) {
         this.compare = compare;
     }
-    public void setErrors(List<DifferenceTable> errors) {
-        this.errors = errors;
-    }
     public void isSubmeter(boolean submeter) {
         this.submeter = submeter;
     }
@@ -289,5 +290,11 @@ public class CompareTable extends SubmeterCompareThread{
     }
     public void setOwner(String owner) {
         this.owner=owner;
+    }
+    public void setParam(ThreadParam param) {
+        this.param = param;
+    }
+    public void setOwnerParam(OwnerParam ownerParam) {
+        this.ownerParam = ownerParam;
     }
 }

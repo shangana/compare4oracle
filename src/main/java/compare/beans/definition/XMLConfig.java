@@ -21,8 +21,9 @@ public class XMLConfig {
     private PDM pdm;
     
     private Database database;
-    
+    private List<Database> sources;
     private List<Database> databases;
+    
     
     private Database singleDatabase;
     
@@ -169,6 +170,38 @@ public class XMLConfig {
         }
         
         this.equality = equality;
+    }
+
+    public List<Database> getSources() {
+        return sources;
+    }
+
+    @SuppressWarnings("unchecked")
+    public void setSources(Element databasesElement) {
+        List<Database> databases = Lists.newArrayList();
+        for (Iterator<Element> iterator = databasesElement.elementIterator(); iterator.hasNext();) {
+            Element databaseElement = iterator.next();
+            if (!"database".equals(databaseElement.getName())) {
+                logger.error("<" + databaseElement.getName() + "> 标签定义错误!");
+                continue;
+            }
+            Database database = new Database();
+            databases.add(database);
+            Iterator<Element> element = databaseElement.elementIterator();
+            while (element.hasNext()) {
+                Element obj = element.next();
+                if ("url".equals(obj.getName())) {
+                    database.setDburl(obj.getTextTrim());
+                }
+                else if ("username".equals(obj.getName())) {
+                    database.setDbusr(obj.getTextTrim());
+                }
+                else if ("passwd".equals(obj.getName())) {
+                    database.setDbpwd(obj.getTextTrim());
+                }
+            }
+        }
+        this.sources = databases;
     }
     
 }

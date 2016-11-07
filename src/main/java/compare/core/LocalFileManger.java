@@ -130,7 +130,6 @@ public class LocalFileManger {
         byte[] buf = new byte[1024];
         while ((byteread = inStream.read(buf)) != -1)
         {
-            // bytesum+=byteread;
             outStream.write(buf, 0, byteread);
         }
         inStream.close();

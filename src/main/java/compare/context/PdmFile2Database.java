@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.concurrent.CountDownLatch;
@@ -11,7 +12,7 @@ import java.util.concurrent.CountDownLatch;
 import org.dom4j.Element;
 
 import com.google.common.collect.Lists;
-import compare.beans.DatabaseInfo;
+import com.google.common.collect.Maps;
 import compare.beans.PdmFileInfo;
 import compare.beans.Table;
 import compare.beans.definition.Database;
@@ -25,15 +26,15 @@ import compare.core.MailHandler;
 
 public class PdmFile2Database extends Compare {
     private PdmFileCompare pdmCompare = PdmFileCompare.getInstance();
-    private DatabaseCompare databaseCompare = DatabaseCompare.getInstance();
+//    private DatabaseCompare databaseCompare = DatabaseCompare.getInstance();
     private PdmFileInfo pdmFileInfo;
-    private DatabaseInfo databaseInfo;
+//    private DatabaseInfo databaseInfo;
     private MailHandler handler;
     private PDM pdm;
     private List<Database> databases;
     private Database single;
     private Equality equality;
-    
+
     public PdmFile2Database(String config) {
         super(config);
         pdm = xmlConfig.getPdm();
@@ -49,6 +50,15 @@ public class PdmFile2Database extends Compare {
             logger.error(new Exception("get pdm file is error,赶快去看看吧!"));
             return;
         }
+        
+        if (null != single) {
+            logger.debug("--single compare config--");
+            databases = Lists.newArrayList(single);
+        }
+        else {
+            logger.debug("--databases compare config--");
+            databases = xmlConfig.getDatabases();
+        }
         try {
             getEquality();
         }
@@ -57,18 +67,6 @@ public class PdmFile2Database extends Compare {
             logger.error(new Exception("equality tag config is error,赶快去看看吧!"));
             return;
         }
-        if (null != single) {
-            logger.debug("--single compare config--");
-            databaseInfo = databaseCompare.getDatabaseInfo(single);
-            databaseInfo.setSingle(true);
-            databases = Lists.newArrayList(single);
-        }
-        else {
-            logger.debug("--databases compare config--");
-            databases = xmlConfig.getDatabases();
-            databaseInfo = databaseCompare.getDatabaseInfos(databases);
-        }
-        
         //pdm 文件中无owner属性的发邮件通知
         try {
             pdmFileNoOwner();
@@ -100,30 +98,40 @@ public class PdmFile2Database extends Compare {
         handler.sendNoOwnerMail(nws);
     }
     private void verify() throws Exception {
-        if (null == pdmFileInfo || null == databaseInfo) {
+        if (null == pdmFileInfo || null == databases) {
             throw new Exception("--This is xml config file is error.");
         }
     }
     private void getEquality() throws Exception {
         List<String> usernames = equality.getUsernames();
+        Map<String,Database> dbmap = Maps.newHashMap();
         if (null == usernames) {
             usernames = Lists.newArrayList();
             List<String> users = pdmFileInfo.getUsers();
             if (null != single) {
                 usernames.add("<=>");
+                dbmap.put(single.getDbusr().toUpperCase(), single);
             }
             else {
                 for (Database database : databases) {
                     String dbusr = database.getDbusr();
                     if (users.contains(dbusr)) {
                         usernames.add(dbusr+"="+dbusr);
+                        dbmap.put(dbusr.toUpperCase(), database);
                     }
                 }
             }
             equality.setUsernames(usernames);
+            equality.setDbmap(dbmap);
+        }
+        else {
+            for (Database database : databases) {
+                dbmap.put(database.getDbusr().toUpperCase(), database);
+            }
+            equality.setDbmap(dbmap);
         }
         if (usernames.isEmpty()) {
-            logger.error("没有比对的用户");
+            logger.error(new Exception("没有比对的用户"));
             throw new Exception("没有比对的用户");
         }
         
@@ -134,23 +142,37 @@ public class PdmFile2Database extends Compare {
         
         List<DifferenceTable> tableerrors = Lists.newArrayList();
         List<DifferenceIndex> indexerrors = Lists.newArrayList();
+        ThreadParam param = new ThreadParam();
+        Integer countSourceTables = 0 ;
+        Integer countCompareTables = 0 ;
+        param.setIndexerrors(indexerrors);
+        param.setTableerrors(tableerrors);
+        param.setCountSourceTables(countSourceTables);
+        param.setCountCompareTables(countCompareTables);
         List<String> usernames = equality.getUsernames();
-      //起多少个线程
+        //起多少个线程
         CountDownLatch latch = new CountDownLatch(usernames.size());
         for (String owner : usernames) {
             String[] split = owner.split("=");
             if (("".equals(split[0])||"".equals(split[1])) && !split[0].equals(split[1])) {
-                logger.error("比对双方的对应用户配置错误!");
+                logger.error(new Exception("比对双方的对应用户配置错误!"));
                 return;
             }
+            Database database = equality.getDbmap().get(split[1].toUpperCase());
+            if (null == database)  {
+                logger.error(new Exception("<equality> config error, 比对双方的对应用户与数据连接不一致."));
+                latch.countDown();
+                continue;
+            }
+            OwnerParam ownerParam = new OwnerParam();
             //线程执行
             ThreadOwner threadOwner= new ThreadOwner();
             threadOwner.setLatch(latch);
             threadOwner.setOwner(owner);
             threadOwner.setPdmFileInfo(pdmFileInfo);
-            threadOwner.setDatabaseInfo(databaseInfo);
-            threadOwner.setTableerrors(tableerrors);
-            threadOwner.setIndexerrors(indexerrors);
+            ownerParam.setDatabase(database);
+            threadOwner.setParam(param);
+            threadOwner.setOwnerParam(ownerParam);
             threadOwner.setSingle(null != single);
             threadOwner.setSubmeter(pdm.isSubmeter());
             threadOwner.start();
@@ -162,7 +184,7 @@ public class PdmFile2Database extends Compare {
             e.printStackTrace();
         }
         //
-        sendTableMail(tableerrors);
+        sendTableMail(tableerrors, param);
         //
         sendIndexMail(indexerrors);
     }
@@ -175,10 +197,10 @@ public class PdmFile2Database extends Compare {
         handler.sendIndexMail(indexerrors, result);
     }
 
-    private void sendTableMail(List<DifferenceTable> errors) throws IOException {
+    private void sendTableMail(List<DifferenceTable> errors, ThreadParam param) throws IOException {
         //
-        int sourceNumber = pdmFileInfo.getTables().values().size();
-        int compareNumber = databaseInfo.getTables().values().size();
+        int sourceNumber = param.getCountSourceTables();
+        int compareNumber = param.getCountCompareTables();
         
         CompareResult result = new CompareResult();
         result.setCompareContent("database");

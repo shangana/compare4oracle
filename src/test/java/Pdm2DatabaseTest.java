@@ -3,12 +3,13 @@
 import org.junit.Test;
 
 import compare.AppMain;
+import compare.core.MailHandler;
 
 public class Pdm2DatabaseTest {
     
     @Test
     public void test() {
-        String config="/Users/apple/asiainfo/08-DBCompare比对工具/pdm2oracledb.xml";
+        String config="/Users/apple/asiainfo/trunk/compare4oracle/pdm2oracledb.xml";
         String[] args = {config,"1"};
         AppMain.main(args);
     }
@@ -21,8 +22,7 @@ public class Pdm2DatabaseTest {
     
     @Test
     public void test11() {
-        String a="!";
-        String b = null;
-        System.out.println(a.equals(b));
+        String fileName="/Users/apple/asiainfo/trunk/compare4oracle/compare_table.html";
+        System.out.println(MailHandler.getCharsetName(fileName));
     }
 }
