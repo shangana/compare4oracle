@@ -76,7 +76,7 @@ public class CompareTable extends SubmeterCompareThread{
         }
         
         param.getTableerrors().addAll(error);
-        param.setCountCompareTables(error.size());
+        param.setCountCompareTables(compare.keySet().size());
         param.setCountSourceTables(source.keySet().size());
         //
         latch.countDown();

@@ -39,6 +39,7 @@ public class LocalFileManger {
             }
             int count = 0;
             for (String pdmurl : localconfig) {
+                logger.debug("pdmurl="+pdmurl);
                 int j = pdmurl.lastIndexOf(File.separator);
                 String url = pdmurl.substring(0, j);
                 String name = pdmurl.substring(j + 1, pdmurl.length()).trim();

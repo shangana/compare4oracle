@@ -108,16 +108,17 @@ public class PdmFile2Database extends Compare {
         List<String> usernames = equality.getUsernames();
         Map<String,Database> dbmap = Maps.newHashMap();
         List<String> users = pdmFileInfo.getUsers();
-        if (null == usernames) {
+        if (null == usernames || usernames.isEmpty()) {
             usernames = Lists.newArrayList();
             if (null != single) {
-                usernames.add("<=>");
-                dbmap.put(single.getDbusr().toUpperCase(), single);
+                String user = single.getDbusr().toUpperCase();
+                usernames.add(user+"="+user);
+                dbmap.put(user, single);
             }
             else {
                 for (Database database : databases) {
                     String dbusr = database.getDbusr().toUpperCase();
-                    if (!users.contains(dbusr)) {
+                    if (!usernames.contains(dbusr) && users.contains(dbusr)) {
                         usernames.add(dbusr+"="+dbusr);
                         dbmap.put(dbusr, database);
                     }

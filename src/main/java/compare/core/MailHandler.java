@@ -126,8 +126,8 @@ public class MailHandler {
         String readBody = readBody(filename,charsetName);
         readBody = readBody.replaceAll("#sourceTables", result.getSourceNumber() + "");
         readBody = readBody.replaceAll("#compareTables", result.getCompareNumber() + "");
-        readBody = readBody.replaceAll("#diffTables", result.getDiffNumber() + "");
         readBody = readBody.replaceAll("#diffRate", result.getDiffrate() + "");
+        readBody = readBody.replaceAll("#diffTables", result.getDiffNumber() + "");
         readBody = readBody.replaceAll("#wupf1", getCurrDateTime());
         readBody = readBody.replaceAll("#wupf2", result.getSourceContent());
         readBody = readBody.replaceAll("#wupf3", result.getCompareContent());

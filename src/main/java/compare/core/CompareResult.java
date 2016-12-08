@@ -37,7 +37,7 @@ public class CompareResult {
         }
         diffNumber =diffTableName.size();
         
-        return sourceNumber == 0 ? 0 : diffNumber/sourceNumber;
+        return sourceNumber == 0 ? 0 : diffNumber/Float.parseFloat(sourceNumber+"");
     }
     public String getSourceContent() {
         return sourceContent;
