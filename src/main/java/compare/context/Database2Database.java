@@ -18,7 +18,7 @@ import compare.core.CompareResult;
 import compare.core.MailHandler;
 
 
-public class Database2Database extends Compare {
+public class Database2Database extends Compare{
     private MailHandler handler;
     private List<Database> sources;
     private List<Database> databases;
@@ -29,6 +29,8 @@ public class Database2Database extends Compare {
         super(config);
         handler = new MailHandler(xmlConfig.getMail());
         sources = xmlConfig.getSources();
+        
+        single = xmlConfig.getSingleDatabase();
         //
         if (null != single) {
           logger.debug("--single compare config--");
@@ -83,6 +85,9 @@ public class Database2Database extends Compare {
             } else if ("single".equals(nodeName)) {
                 xml.setSingle(item);
             }
+            else if ("equality".equals(nodeName)) {
+                xml.setEquality(item);
+            }
         }
         return xml;
     }
@@ -133,6 +138,7 @@ public class Database2Database extends Compare {
             
             for (Database database : sources) {
                 sourcemap.put(database.getDbusr().toUpperCase(), database);
+                sourceUsers.add(database.getDbusr().toUpperCase());
             }
             equality.setSourcemap(sourcemap);
             //
@@ -185,6 +191,7 @@ public class Database2Database extends Compare {
             threadOwner.setOwner(owner);
             ownerParam.setSource(equality.getSourcemap().get(split[0].toUpperCase()));
             ownerParam.setDatabase(equality.getDbmap().get(split[1].toUpperCase()));
+            threadOwner.setOwnerParam(ownerParam);
             threadOwner.setParam(param);
             threadOwner.setSingle(null != single);
             threadOwner.start();

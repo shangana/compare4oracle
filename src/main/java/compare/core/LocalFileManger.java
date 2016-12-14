@@ -40,11 +40,15 @@ public class LocalFileManger {
             int count = 0;
             for (String pdmurl : localconfig) {
                 logger.debug("pdmurl="+pdmurl);
-                int j = pdmurl.lastIndexOf(File.separator);
+                String separator = "/";
+                if (pdmurl.indexOf(separator) == -1) {
+                    separator = "\\";
+                }
+                int j = pdmurl.lastIndexOf(separator);
                 String url = pdmurl.substring(0, j);
                 String name = pdmurl.substring(j + 1, pdmurl.length()).trim();
                 // 获得倒数第二层目录
-                int secd = url.lastIndexOf(File.separator);
+                int secd = url.lastIndexOf(separator);
                 String secdpath = url.substring(secd + 1, url.length());
                 String subPdmPath = rootPath + File.separator + (count++) + File.separator + secdpath;
                 delDirWithFiles(subPdmPath);

@@ -11,7 +11,7 @@
 	<!--源库配置,必选 -->
 	<pdm>
 		<!--是否支持分表, false不支持 true 支持 -->
-		<submeter>false</submeter>
+		<submeter>true</submeter>
 		<!--svn文件路径配置,与local配置选择一种即可 
 		<svn>
 			<url>http://cmcssm.asiainfo.com/scm/svn/aissm_sonar/dbcompare_pdm/黑龙江crm配套系统.pdm</url>
@@ -21,31 +21,25 @@
 		-->
 		<!-- 本地pdm文件配置,与svn配置选择一种即可-->
 		<local>
-			<path>/Users/apple/Desktop/pdm1/ailk_verisbilling_data_model_cim.pdm</path>
-			<path>/Users/apple/Desktop/pdm1/ailk_bd_pdm.pdm</path>
-			<path>/Users/apple/Desktop/pdm1/ailk_sd_pdm.pdm</path>
-			<path>/Users/apple/Desktop/pdm1/ailk_md_pdm.pdm</path>
-			<path>/Users/apple/Desktop/pdm1/ailk_openbilling_data_model_productmanager.pdm</path>
-			<path>/Users/apple/Desktop/pdm1/ailk_verisbilling_data_model_usage.pdm</path>
+			<path>/Users/apple/Desktop/pdm/so1.pdm</path>
 		</local>
 		
 	</pdm>
-	<!--比对单个数据库, single与databases配置选择一种即可
+	<!--比对单个数据库, single与databases配置选择一种即可 -->
 	<single>
 		<url>jdbc:oracle:thin:@10.211.55.4:1521:orcl</url>
-		<username>UCR_CEN1</username>
-		<passwd>123456</passwd>
+			<username>so1</username>
+			<passwd>123456</passwd>
 	</single>
-	 -->
-	<!--比对库配置,必选,支持多个比对库 -->
-	<databases>
-		<!--<username> 建表所在用户 -->
+	
+	<!--比对库配置,必选,支持多个比对库 <username> 建表所在用户 -->
+	<!--
+	<databases> 
 		<database>
 			<url>jdbc:oracle:thin:@10.211.55.4:1521:orcl</url>
-			<username>base</username>
+			<username>bboss2</username>
 			<passwd>123456</passwd>
 		</database>
-		<!-- 
 		<database>
 			<url>jdbc:oracle:thin:@10.211.55.4:1521:orcl</url>
 			<username>base</username>
@@ -56,26 +50,13 @@
 			<username>sec</username>
 			<passwd>123456</passwd>
 		</database>
-		-->
-		<!--
-		<database>
-			<url>jdbc:oracle:thin:@10.211.55.4:1521:orcl</url>
-			<username>UCR_CEN1</username>
-			<passwd>123456</passwd>
-		</database>
-		
-		<database>
-			<url>jdbc:oracle:thin:@10.7.5.74:1521:ncrmdb</url>
-			<username>aiopg</username>
-			<passwd>aiopg-74</passwd>
-		</database>
-		
-	-->
 	</databases>
+	-->
 	<!--比对双方用户的对等关系,可选, 格式"源用户=比对用户" 建议采用此方式配置比对用户-->
 	<equality>
-		<username>base=base</username>
-		<!--
+	<!--
+		<username>bboss2=bboss2</username>
+		
 		<username>sec=sec</username>
 		<username>so1=ucr_cen1</username>
 		-->

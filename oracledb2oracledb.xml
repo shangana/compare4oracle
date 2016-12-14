@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <compare>
-	<!--
+	<!-- 邮件配置,可选
 	<mail>
 			<stmp>mail.asiainfo.com</stmp>
 			<user>yuesf</user>
@@ -8,15 +8,15 @@
 			<receiver>yuesf</receiver>
 	</mail>
 	-->
+	<!--比对源库, 至少有一个<database>标签 -->
 	<sources>
 		<database>
-			<url>jdbc:oracle:thin:@10.20.16.80:1521:ngcrm</url>
-			<username>BJ_UCR_CEN1</username>
+			<url>jdbc:oracle:thin:@10.211.55.4:1521:orcl</url>
+			<username>bboss2</username>
 			<passwd>123456</passwd>
 		</database>
 	</sources>
-	
-	
+	<!-- 目标比对库, 至少有一个<datatabse> 标签 -->
 	<databases>
 		<database>
 			<url>jdbc:oracle:thin:@10.211.55.4:1521:orcl</url>
@@ -26,8 +26,6 @@
 	</databases>
 	<!--比对双方用户的对等关系,可选, 格式"源用户=比对用户" 建议采用此方式配置比对用户-->
 	<equality>
-		<username>so1=ucr_cen1</username>
-		<username>base=base</username>
-		<username>sec=sec</username>
+		<username>bboss2=ucr_cen1</username>
 	</equality>
 </compare>
