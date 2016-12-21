@@ -13,6 +13,7 @@ import compare.context.PdmFile2Database;
 public class AppMain {
     private static final Logger logger = LogManager.getLogger();
     
+    
     /**
      * args[0] xml的配置文件路径
      * args[1] 1-pdmTodatabase,  2-databaseTodatabase
