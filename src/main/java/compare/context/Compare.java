@@ -1,6 +1,11 @@
 package compare.context;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -46,8 +51,16 @@ public abstract class Compare {
         SAXReader saxReader = new SAXReader();
         Document document;
         try {
-            document = saxReader.read(config);
+        	InputStream iFile = new FileInputStream(config);
+        	InputStreamReader iSR = new InputStreamReader(iFile, "UTF-8");
+            document = saxReader.read(iSR);
             return document.getRootElement();
+        }
+        catch (FileNotFoundException e) {
+        	e.printStackTrace();
+        }
+        catch (UnsupportedEncodingException e) {
+        	e.printStackTrace();
         }
         catch (DocumentException e) {
             e.printStackTrace();
