@@ -87,7 +87,7 @@ public class MailHandler {
         }
     }
     
-    public void sendTableMail(List<DifferenceTable> errors, CompareResult result) throws IOException {
+    public void sendTableMail(List<DifferenceTable> errors, CompareResult result) throws Exception {
         sortTable(errors);
         String filename = "compare_table.html";
         String charsetName = getCharsetName(filename);
@@ -164,7 +164,7 @@ public class MailHandler {
         });
     }
 
-    public void sendIndexMail(List<DifferenceIndex> errors, CompareResult result) throws IOException {
+    public void sendIndexMail(List<DifferenceIndex> errors, CompareResult result) throws Exception {
         sortIndex(errors);
         String filename = "compare_index.html";
         String charsetName = getCharsetName(filename);
