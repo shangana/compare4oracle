@@ -46,7 +46,7 @@ public class XmlBeanReader {
         this.rootPath = rootPath;
     }
     
-    public PdmFileInfo getPdmFileInfo() {
+    public PdmFileInfo getPdmFileInfo() throws Exception {
         LinkedHashMap<String, Document> documents = getDocuments();
         PdmFileInfo info = new PdmFileInfo();
         Iterator<Entry<String, Document>> iterator = documents.entrySet().iterator();
@@ -309,7 +309,7 @@ logger.debug("--index code="+code);
         
     }
     
-    private LinkedHashMap<String, Document> getDocuments() {
+    private LinkedHashMap<String, Document> getDocuments() throws Exception {
         List<File> pdmfiles = getPdmFile();
         LinkedHashMap<String, Document> files = Maps.newLinkedHashMap();
         for (File file : pdmfiles) {
@@ -332,7 +332,7 @@ logger.debug("--index code="+code);
         return files;
     }
     
-    private File toXMLFile(File file, String xml) {
+    private File toXMLFile(File file, String xml) throws Exception {
         String line;
         File xmlfile = new File(xml);
         if (xmlfile.exists()) {

@@ -87,7 +87,7 @@ public class MailHandler {
         }
     }
     
-    public void sendTableMail(List<DifferenceTable> errors, CompareResult result) throws IOException {
+    public void sendTableMail(List<DifferenceTable> errors, CompareResult result) throws Exception {
         sortTable(errors);
         String filename = "compare_table.html";
         String charsetName = getCharsetName(filename);
@@ -164,7 +164,7 @@ public class MailHandler {
         });
     }
 
-    public void sendIndexMail(List<DifferenceIndex> errors, CompareResult result) throws IOException {
+    public void sendIndexMail(List<DifferenceIndex> errors, CompareResult result) throws Exception {
         sortIndex(errors);
         String filename = "compare_index.html";
         String charsetName = getCharsetName(filename);
@@ -387,10 +387,10 @@ public class MailHandler {
         }
     }
     
-    public static String getCharsetName(String file) {
+    public static String getCharsetName(String file) throws Exception {
         return getCharsetName(new File(file));
     }
-    public static String getCharsetName(File file) {
+    public static String getCharsetName(File file) throws Exception {
         /*------------------------------------------------------------------------ 
         detector是探测器，它把探测任务交给具体的探测实现类的实例完成。 
         cpDetector内置了一些常用的探测实现类，这些探测实现类的实例可以通过add方法 
@@ -424,6 +424,11 @@ public class MailHandler {
       }
       if (charset != null) {
           logger.debug(file+", This file charset is:"+charset);
+          
+          // 探测后得到windows-1252，表示类型错误，需要将PDM另存为XML格式的PDM
+          if ("windows-1252".equals(charset.name())) {
+        	  throw new Exception("PDM文件编码格式不正确，需要另存为XML格式的PDM文件");
+          }
          return charset.name();
       }
       else {

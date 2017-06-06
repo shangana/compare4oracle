@@ -221,7 +221,7 @@ public class Database2Database extends Compare{
         }
     }
 
-    private void sendIndexMail(List<DifferenceIndex> indexerrors) throws IOException {
+    private void sendIndexMail(List<DifferenceIndex> indexerrors) throws Exception {
         CompareResult result = new CompareResult();
         result.setCompareContent("database");
         result.setSourceContent("database");
@@ -229,7 +229,7 @@ public class Database2Database extends Compare{
         handler.sendIndexMail(indexerrors, result);
     }
 
-    private void sendTableMail(List<DifferenceTable> errors, ThreadParam param) throws IOException {
+    private void sendTableMail(List<DifferenceTable> errors, ThreadParam param) throws Exception {
         //
         int sourceNumber = param.getCountSourceTables();
         int compareNumber = param.getCountCompareTables();
