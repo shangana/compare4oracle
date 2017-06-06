@@ -23,6 +23,10 @@ public class Pdm2DatabaseTest {
     @Test
     public void test11() {
         String fileName="/Users/apple/asiainfo/trunk/compare4oracle/compare_table.html";
-        System.out.println(MailHandler.getCharsetName(fileName));
+        try {
+			System.out.println(MailHandler.getCharsetName(fileName));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
     }
 }
