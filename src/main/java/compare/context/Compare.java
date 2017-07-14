@@ -26,12 +26,10 @@ public abstract class Compare {
     protected XMLConfig xmlConfig;
     
     protected String config;
-    
+    protected boolean verify;
     public Compare(String config) {
         this.config = config;
-        if (!readConfigFile()) {
-            return ;
-        }
+        verify = readConfigFile();
     }
     
     private boolean readConfigFile() {

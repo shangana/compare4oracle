@@ -1,6 +1,5 @@
 package compare.context;
 
-import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -25,8 +24,11 @@ public class Database2Database extends Compare{
     private Database single;
     private Equality equality;
     
-    public Database2Database(String config) {
+    public Database2Database(String config) throws Exception {
         super(config);
+        if (!verify) {
+        	throw new Exception("校验配置失败");
+        }
         handler = new MailHandler(xmlConfig.getMail());
         sources = xmlConfig.getSources();
         
@@ -52,9 +54,9 @@ public class Database2Database extends Compare{
 
     @Override
     protected boolean verifyXMLConfig() {
-        Database database2 = xmlConfig.getDatabase();
+         List<Database> sources2 = xmlConfig.getSources();
         List<Database> databases = xmlConfig.getDatabases();
-        if (null == database2 || null == databases) {
+        if (null == sources2 || null == databases) {
             logger.error(xmlConfig + ",this config is error!");
             return false;
         }

@@ -1,6 +1,5 @@
 package compare.context;
 
-import java.io.IOException;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -34,8 +33,11 @@ public class PdmFile2Database extends Compare {
     private Database single;
     private Equality equality;
 
-    public PdmFile2Database(String config) {
+    public PdmFile2Database(String config) throws Exception {
         super(config);
+        if (!verify) {
+        	throw new Exception("校验配置失败");
+        }
         pdm = xmlConfig.getPdm();
         handler = new MailHandler(xmlConfig.getMail());
         equality = xmlConfig.getEquality();
